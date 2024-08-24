@@ -1,8 +1,12 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.time.LocalDate;
 
@@ -10,6 +14,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class FilmControllerTest {
+
+    @Autowired
+    private FilmService filmService;
+
+    @Autowired
+    private FilmStorage filmStorage;
+
+    private FilmController filmController;
+
+    @BeforeEach
+    void setUp() {
+        filmController = new FilmController(filmService, filmStorage);
+    }
 
     @Test
     void shouldCorrect() {
@@ -19,7 +36,7 @@ class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2020, 1, 1));
         film.setDuration(120);
 
-        assertDoesNotThrow(() -> new FilmController().createFilm(film),
+        assertDoesNotThrow(() -> filmController.createFilm(film),
                 "Ожидалось, что createFilm() не выдаст исключение, но оно произошло.");
     }
 
@@ -33,7 +50,7 @@ class FilmControllerTest {
 
         RuntimeException thrown = assertThrows(
                 RuntimeException.class,
-                () -> new FilmController().createFilm(film),
+                () -> filmController.createFilm(film),
                 "Ожидалось, что createFilm() выдаст исключение, но этого не произошло."
         );
         assertTrue(thrown.getMessage().contains("Должно быть задано название фильма"));
@@ -49,7 +66,7 @@ class FilmControllerTest {
 
         RuntimeException thrown = assertThrows(
                 RuntimeException.class,
-                () -> new FilmController().createFilm(film),
+                () -> filmController.createFilm(film),
                 "Ожидалось, что createFilm() выдаст исключение, но этого не произошло."
         );
         assertTrue(thrown.getMessage().contains("Описание фильма не может быть длиннее 200 символов"));
@@ -65,7 +82,7 @@ class FilmControllerTest {
 
         RuntimeException thrown = assertThrows(
                 RuntimeException.class,
-                () -> new FilmController().createFilm(film),
+                () -> filmController.createFilm(film),
                 "Ожидалось, что createFilm() выдаст исключение, но этого не произошло."
         );
         assertTrue(thrown.getMessage().contains("Фильм не может быть старше 28 декабря 1895 года"));
@@ -81,7 +98,7 @@ class FilmControllerTest {
 
         RuntimeException thrown = assertThrows(
                 RuntimeException.class,
-                () -> new FilmController().createFilm(film),
+                () -> filmController.createFilm(film),
                 "Ожидалось, что createFilm() выдаст исключение, но этого не произошло."
         );
         assertTrue(thrown.getMessage().contains("Длительность фильма может быть только положительной"));
