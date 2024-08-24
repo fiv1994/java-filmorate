@@ -8,7 +8,10 @@ import java.util.List;
 @Component
 public interface UserStorage {
     User createUser(User user);
+
     List<User> getAll();
+
     User updateUser(User newUser);
+
     User getUserById(int id);
 }

@@ -8,10 +8,16 @@ import java.util.List;
 @Service
 public interface UserService {
     User createUser(User user);
+
     List<User> getAll();
+
     User updateUser(User newUser);
+
     void addFriend(int userId, int friendId);
+
     void removeFriend(int userId, int friendId);
+
     List<User> getFriends(int userId);
+
     List<User> getCommonFriends(int userId, int friendId);
 }
