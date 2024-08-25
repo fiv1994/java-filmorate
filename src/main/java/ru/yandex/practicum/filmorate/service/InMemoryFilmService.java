@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -50,36 +51,40 @@ public class InMemoryFilmService implements FilmService {
 
     @Override
     public void addLike(int filmId, int userId) {
-        Film film = filmStorage.getFilmById(filmId);
-        User user = userStorage.getUserById(userId);
-        log.info("Пользователь '{}' хочет поставить лайк фильму '{}'", user.getLogin(), film.getName());
-        if (film != null && user != null) {
+        Optional<Film> filmOptional = filmStorage.getFilmById(filmId);
+        Optional<User> userOptional = userStorage.getUserById(userId);
+        if (filmOptional.isPresent() && userOptional.isPresent()) {
+            Film film = filmOptional.get();
+            User user = userOptional.get();
+            log.info("Пользователь '{}' хочет поставить лайк фильму '{}'", user.getLogin(), film.getName());
             film.getLikes().add(userId);
             user.getLikedFilms().add(filmId);
             filmStorage.updateFilm(film);
             userStorage.updateUser(user);
             log.info("От пользователя '{}' добавлен лайк фильму '{}'", user.getLogin(), film.getName());
-        } else if (film == null) {
-            throw new EntityNotFoundException("Фильм с ID " + film.getId() + " не найден");
-        } else if (user == null) {
+        } else if (filmOptional.isEmpty()) {
+            throw new EntityNotFoundException("Фильм с ID " + filmId + " не найден");
+        } else if (userOptional.isEmpty()) {
             throw new ValidationException("Пользователь с ID " + userId + " не найден");
         }
     }
 
     @Override
     public void removeLike(int filmId, int userId) {
-        Film film = filmStorage.getFilmById(filmId);
-        User user = userStorage.getUserById(userId);
-        log.info("Пользователь '{}' хочет убрать лайк у фильма '{}'", user.getLogin(), film.getName());
-        if (film != null && user != null) {
+        Optional<Film> filmOptional = filmStorage.getFilmById(filmId);
+        Optional<User> userOptional = userStorage.getUserById(userId);
+        if (filmOptional.isPresent() && userOptional.isPresent()) {
+            Film film = filmOptional.get();
+            User user = userOptional.get();
+            log.info("Пользователь '{}' хочет убрать лайк у фильма '{}'", user.getLogin(), film.getName());
             film.getLikes().remove(userId);
             user.getLikedFilms().remove(filmId);
             filmStorage.updateFilm(film);
             userStorage.updateUser(user);
             log.info("Пользователь '{}' убрал лайк от фильма '{}'", user.getLogin(), film.getName());
-        } else if (film == null) {
-            throw new EntityNotFoundException("Фильм с ID " + film.getId() + " не найден");
-        } else if (user == null) {
+        } else if (filmOptional.isEmpty()) {
+            throw new EntityNotFoundException("Фильм с ID " + filmId + " не найден");
+        } else if (userOptional.isEmpty()) {
             throw new ValidationException("Пользователь с ID " + userId + " не найден");
         }
     }
@@ -89,6 +94,13 @@ public class InMemoryFilmService implements FilmService {
         List<Film> films = filmStorage.getAll();
         films.sort((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()));
         return films.subList(0, Math.min(count, films.size()));
+    }
+
+    @Override
+    public Optional<Film> getFilmById(int id) {
+        return Optional.ofNullable(filmStorage.getFilmById(id).orElseThrow(() ->
+                new EntityNotFoundException("Фильм с ID '" + id + "' не найден")
+        ));
     }
 
     private void validate(Film film) {

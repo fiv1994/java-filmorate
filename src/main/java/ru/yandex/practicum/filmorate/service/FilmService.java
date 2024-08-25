@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public interface FilmService {
@@ -18,4 +19,6 @@ public interface FilmService {
     void removeLike(int filmId, int userId);
 
     List<Film> getMostPopularFilms(int count);
+
+    Optional<Film> getFilmById(int id);
 }

@@ -6,10 +6,7 @@ import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -49,12 +46,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film getFilmById(int id) {
-        log.info("Ищем фильм с ID '{}'", films.get(id));
-        if (!films.containsKey(id)) {
-            throw new EntityNotFoundException("Фильм с ID " + id + " не найден.");
-        }
-        log.info("Найден фильм с ID '{}'", films.get(id));
-        return films.get(id);
+    public Optional<Film> getFilmById(int id) {
+        log.info("Ищем фильм с ID '{}'", id);
+        return Optional.ofNullable(films.get(id));
     }
 }

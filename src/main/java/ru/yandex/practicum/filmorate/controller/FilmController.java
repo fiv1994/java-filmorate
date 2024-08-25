@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/films")
@@ -45,7 +46,7 @@ public class FilmController {
     @DeleteMapping("/{filmId}/like/{userId}")
     public ResponseEntity<?> removeLike(@PathVariable int filmId, @PathVariable int userId) {
         filmService.removeLike(filmId, userId);
-        return ResponseEntity.ok().build(); // Исправлено на возврат успешного ответа
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/popular")
@@ -54,8 +55,10 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable int id) {
-        return filmStorage.getFilmById(id);
+    public ResponseEntity<Film> getFilmById(@PathVariable int id) {
+        Optional<Film> film = filmService.getFilmById(id);
+        return film.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
 }

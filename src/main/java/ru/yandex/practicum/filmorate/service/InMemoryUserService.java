@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -47,60 +48,69 @@ public class InMemoryUserService implements UserService {
 
     @Override
     public void addFriend(int userId, int friendId) {
-        User user = userStorage.getUserById(userId);
-        User friend = userStorage.getUserById(friendId);
+        Optional<User> userOptional = userStorage.getUserById(userId);
+        Optional<User> friendOptional = userStorage.getUserById(friendId);
         log.info("Пользователю с ID '{}' пришёл запрос на добавление в друзья от пользователя с ID '{}'", userId,
                 friendId);
-        if (user == null) {
-            throw new EntityNotFoundException("Пользователь с ID '" + userId + " не найден, запрос на добавление" +
-                    " в друзья не был обработан");
-        } else if (friend == null) {
-            throw new EntityNotFoundException("Пользователь с ID '" + friendId + " не найден, запрос на добавление" +
-                    " в друзья от пользователя с ником " + user.getLogin() + " не был обработан");
-        } else {
+        if (userOptional.isPresent() && friendOptional.isPresent()) {
+            User user = userOptional.get();
+            User friend = friendOptional.get();
             log.info("Пользователю с ником '{}' пришёл запрос на добавление в друзья от пользователя с ником '{}'",
                     user.getLogin(), friend.getLogin());
             user.getFriends().add(friendId);
             friend.getFriends().add(userId);
             userStorage.updateUser(user);
             userStorage.updateUser(friend);
+            log.info("Пользователь с ником '{}' успешно добавил в друзья пользователя с ником '{}'",
+                    user.getLogin(), friend.getLogin());
+        } else if (userOptional.isEmpty()) {
+            throw new EntityNotFoundException("Пользователь с ID '" + userId + " не найден, запрос на добавление" +
+                    " в друзья не был обработан");
+        } else if (friendOptional.isEmpty()) {
+            User user = userOptional.get();
+            throw new EntityNotFoundException("Пользователь с ID '" + friendId + " не найден, запрос на добавление" +
+                    " в друзья от пользователя с ником " + user.getLogin() + " не был обработан");
         }
     }
 
     @Override
     public void removeFriend(int userId, int friendId) {
-        User user = userStorage.getUserById(userId);
-        User friend = userStorage.getUserById(friendId);
-        if (user == null) {
-            throw new EntityNotFoundException("Пользователь с ID '" + userId + "' не найден, удаление из друзей" +
-                    "невозможно");
-        } else if (friend == null) {
-            throw new EntityNotFoundException("Пользователь с ID '" + friendId + "' не найден, удаление из друзей" +
-                    "от пользователя '" + user.getLogin() + "' невозможно");
-        } else {
+        Optional<User> userOptional = userStorage.getUserById(userId);
+        Optional<User> friendOptional = userStorage.getUserById(friendId);
+        if (userOptional.isPresent() && friendOptional.isPresent()) {
+            User user = userOptional.get();
+            User friend = friendOptional.get();
             log.info("Пользователь '{}' хочет удалить из друзей '{}'", user.getLogin(), friend.getLogin());
             user.getFriends().remove(friendId);
             friend.getFriends().remove(userId);
+            userStorage.updateUser(user);
+            userStorage.updateUser(friend);
             log.info("Пользователь '{}' удалил из друзей '{}'", user.getLogin(), friend.getLogin());
+        } else if (userOptional.isEmpty()) {
+            throw new EntityNotFoundException("Пользователь с ID '" + userId + "' не найден, удаление из друзей" +
+                    "невозможно");
+        } else if (friendOptional.isEmpty()) {
+            User user = userOptional.get();
+            throw new EntityNotFoundException("Пользователь с ID '" + friendId + "' не найден, удаление из друзей" +
+                    "от пользователя '" + user.getLogin() + "' невозможно");
         }
     }
 
     @Override
     public List<User> getFriends(int userId) {
-        User user = userStorage.getUserById(userId);
-        if (user == null) {
-            throw new EntityNotFoundException("Пользователь с ID '" + userId + "' не найден");
-        }
-
+        Optional<User> userOptional = userStorage.getUserById(userId);
+        User user = userOptional.orElseThrow(() ->
+                new EntityNotFoundException("Пользователь с ID '" + userId + "' не найден")
+        );
         List<User> friends = new ArrayList<>();
         for (int friendId : user.getFriends()) {
-            User friend = userStorage.getUserById(friendId);
-            if (friend != null) {
+            Optional<User> friendOptional = userStorage.getUserById(friendId);
+            friendOptional.ifPresentOrElse(friend -> {
                 log.info("Найден друг пользователя '{}' - пользователь '{}'", user.getLogin(), friend.getLogin());
                 friends.add(friend);
-            } else {
-                log.info("Не найден друг пользователя '{}' - пользователь '{}'", user.getLogin(), friend.getLogin());
-            }
+            }, () -> {
+                log.info("Не найден друг пользователя '{}' - пользователь с ID '{}'", user.getLogin(), friendId);
+            });
         }
         log.info("Получен список друзей пользователя '{}'", user.getLogin());
         return friends;
@@ -108,23 +118,33 @@ public class InMemoryUserService implements UserService {
 
     @Override
     public List<User> getCommonFriends(int userId, int friendId) {
-        User user = userStorage.getUserById(userId);
-        User friend = userStorage.getUserById(friendId);
+        Optional<User> userOptional = userStorage.getUserById(userId);
+        Optional<User> friendOptional = userStorage.getUserById(friendId);
+        User user = userOptional.orElseThrow(() ->
+                new EntityNotFoundException("Пользователь с ID '" + userId + "' не найден")
+        );
+        User friend = friendOptional.orElseThrow(() ->
+                new EntityNotFoundException("Пользователь с ID '" + friendId + "' не найден")
+        );
         log.info("Запрос списка общих друзей для пользователей '{}' и '{}'", user.getLogin(), friend.getLogin());
-        if (user != null && friend != null) {
-            List<User> commonFriends = new ArrayList<>();
-            for (int id : user.getFriends()) {
-                if (friend.getFriends().contains(id)) {
-                    commonFriends.add(userStorage.getUserById(id));
-                }
+        List<User> commonFriends = new ArrayList<>();
+        for (int id : user.getFriends()) {
+            if (friend.getFriends().contains(id)) {
+                userStorage.getUserById(id).ifPresent(commonFriends::add);
             }
-            log.info("Список общих друзей для пользователей '{}' и '{}' успешно получен. Количество общих друзей: {}",
-                    user.getLogin(), friend.getLogin(), commonFriends.size());
-            return commonFriends;
-        } else {
-            throw new EntityNotFoundException("Пользователи с ID " + userId + " или " + friendId + " не найдены");
         }
+        log.info("Список общих друзей для пользователей '{}' и '{}' успешно получен. Количество общих друзей: {}",
+                user.getLogin(), friend.getLogin(), commonFriends.size());
+        return commonFriends;
     }
+
+    @Override
+    public Optional<User> getUserById(int id) {
+        return Optional.ofNullable(userStorage.getUserById(id).orElseThrow(() ->
+                new EntityNotFoundException("Пользователь с ID '" + id + "' не найден")
+        ));
+    }
+
 
     private void validate(User user) {
         if (user.getEmail() == null || user.getEmail().isEmpty() || !user.getEmail().contains("@")) {

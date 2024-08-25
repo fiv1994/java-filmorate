@@ -46,12 +46,13 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User getUserById(int id) {
+    public Optional<User> getUserById(int id) {
+        User user = users.get(id);
         log.info("Ищем пользователя с ID '{}'", users.get(id));
-        if (!users.containsKey(id)) {
-            throw new EntityNotFoundException("Пользователь с ID " + id + " не найден.");
+        if (user == null) {
+            throw new EntityNotFoundException("Фильм с ID '" + id + "' не найден");
         }
-        log.info("Найден пользователь с ID '{}'", users.get(id));
-        return users.get(id);
+        return Optional.of(user);
     }
+
 }
