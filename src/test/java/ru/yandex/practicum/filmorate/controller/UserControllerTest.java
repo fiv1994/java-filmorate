@@ -1,8 +1,12 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 
@@ -10,6 +14,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class UserControllerTest {
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private UserStorage userStorage;
+
+    private UserController userController;
+
+    @BeforeEach
+    void setUp() {
+        userController = new UserController(userService, userStorage);
+    }
 
     @Test
     void shouldFailOnEmptyEmail() {
@@ -21,7 +38,7 @@ class UserControllerTest {
 
         RuntimeException thrown = assertThrows(
                 RuntimeException.class,
-                () -> new UserController().createUser(user),
+                () -> userController.createUser(user),
                 "Ожидалось, что createUser() выдаст исключение, но этого не произошло."
         );
         assertTrue(thrown.getMessage().contains("Электронная почта должна быть задана"));
@@ -37,7 +54,7 @@ class UserControllerTest {
 
         RuntimeException thrown = assertThrows(
                 RuntimeException.class,
-                () -> new UserController().createUser(user),
+                () -> userController.createUser(user),
                 "Ожидалось, что createUser() выдаст исключение, но этого не произошло."
         );
         assertTrue(thrown.getMessage().contains("содержать символ '@'"));
@@ -53,7 +70,7 @@ class UserControllerTest {
 
         RuntimeException thrown = assertThrows(
                 RuntimeException.class,
-                () -> new UserController().createUser(user),
+                () -> userController.createUser(user),
                 "Ожидалось, что createUser() выдаст исключение, но этого не произошло."
         );
         assertTrue(thrown.getMessage().contains("Логин не может быть пустым"));
@@ -69,7 +86,7 @@ class UserControllerTest {
 
         RuntimeException thrown = assertThrows(
                 RuntimeException.class,
-                () -> new UserController().createUser(user),
+                () -> userController.createUser(user),
                 "Ожидалось, что createUser() выдаст исключение, но этого не произошло."
         );
         assertTrue(thrown.getMessage().contains("не должен содержать пробелы"));
@@ -82,7 +99,7 @@ class UserControllerTest {
         user.setEmail("test@example.com");
         user.setBirthday(LocalDate.of(2000, 1, 1));
 
-        new UserController().validate(user);
+        userController.createUser(user);
 
         assertEquals("testuser", user.getName());
     }
@@ -97,7 +114,7 @@ class UserControllerTest {
 
         RuntimeException thrown = assertThrows(
                 RuntimeException.class,
-                () -> new UserController().createUser(user),
+                () -> userController.createUser(user),
                 "Ожидалось, что createUser() выдаст исключение, но этого не произошло."
         );
         assertTrue(thrown.getMessage().contains("Дата рождения не может быть будущей"));
@@ -111,7 +128,7 @@ class UserControllerTest {
         user.setName("Test User");
         user.setBirthday(LocalDate.of(2000, 1, 1));
 
-        assertDoesNotThrow(() -> new UserController().createUser(user),
+        assertDoesNotThrow(() -> userController.createUser(user),
                 "Ожидалось, что createUser() не выдаст исключение, но оно произошло.");
     }
 }
