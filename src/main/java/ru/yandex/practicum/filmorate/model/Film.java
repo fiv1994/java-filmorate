@@ -1,24 +1,32 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.*;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.validation.annotation.ValidReleaseDate;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Film.
- */
-@Getter
-@Setter
 @Data
 public class Film {
     private Integer id;
+
+    @NotBlank(message = "Название не может быть пустым")
     private String name;
+
+    @Size(max = 200, message = "Длина описания должна быть не более 200 символов")
     private String description;
+
+    @NotNull(message = "Это поле обязательно для заполнения")
+    @ValidReleaseDate
     private LocalDate releaseDate;
-    private int duration;
-    private Set<Integer> likes = new HashSet<>();
+
+    @Positive(message = "Продолжительность фильма должна быть положительной")
+    private Integer duration;
+
+    private Set<Genre> genres;
+
+    private RatingMPA mpa;
+
+    private Integer likes;
 }

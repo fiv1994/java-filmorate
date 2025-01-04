@@ -1,12 +1,9 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.service.user;
 
-import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
-import java.util.Optional;
 
-@Service
 public interface UserService {
     User createUser(User user);
 
@@ -21,6 +18,4 @@ public interface UserService {
     List<User> getFriends(int userId);
 
     List<User> getCommonFriends(int userId, int friendId);
-
-    Optional<User> getUserById(int id);
 }

@@ -1,12 +1,10 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.film;
 
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
 import java.util.Optional;
 
-@Component
 public interface FilmStorage {
     Film createFilm(Film film);
 
@@ -15,4 +13,12 @@ public interface FilmStorage {
     Film updateFilm(Film newFilm);
 
     Optional<Film> getFilmById(int id);
+
+    List<Film> getPopularFilms(int count);
+
+    void addLike(int filmId, int userId);
+
+    void removeLike(int filmId, int userId);
+
+    boolean isLikeExist(int filmId, int userId);
 }
