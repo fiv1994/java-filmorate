@@ -1,12 +1,9 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.service.film;
 
-import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
-import java.util.Optional;
 
-@Service
 public interface FilmService {
     Film createFilm(Film film);
 
@@ -20,5 +17,5 @@ public interface FilmService {
 
     List<Film> getMostPopularFilms(int count);
 
-    Optional<Film> getFilmById(int id);
+    Film getFilmById(int id);
 }
