@@ -292,7 +292,6 @@ public class FilmDbStorage implements FilmStorage {
             film.setName(rs.getString("film_name"));
             film.setDescription(rs.getString("film_description"));
             film.setDuration(rs.getInt("film_duration"));
-            film.setLikes(rs.getInt("likes_count"));
 
             Date releaseDate = rs.getDate("release_date");
             if (releaseDate != null) {

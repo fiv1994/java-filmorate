@@ -22,7 +22,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import java.time.LocalDate;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -76,7 +75,6 @@ class FilmorateApplicationTests {
 		film.setDuration(duration);
 		film.setGenres(genres);
 		film.setMpa(mpa);
-		film.setLikes(0);
 		return film;
 	}
 
@@ -177,7 +175,6 @@ class FilmorateApplicationTests {
 
 		Film film = filmStorage.getFilmById(2).orElseThrow(() ->
 				new GeneralException("Фильм, которому поставили лайки, не найден"));
-		assertEquals(1, film.getLikes(), "Количество лайков неверное, лайк не добавился");
 	}
 
 	@Test

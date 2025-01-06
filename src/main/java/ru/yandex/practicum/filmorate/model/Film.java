@@ -27,6 +27,4 @@ public class Film {
     private Set<Genre> genres;
 
     private RatingMPA mpa;
-
-    private Integer likes;
 }
